@@ -68,3 +68,47 @@ func Regex(t interfaces.TB, got, wantRegex string) bool {
 
 	return true
 }
+
+func Nil(t interfaces.TB, got any) bool {
+	t.Helper()
+
+	if got != nil {
+		t.Errorf("got %v, want nil", got)
+		return false
+	}
+
+	return true
+}
+
+func NotNil(t interfaces.TB, got any) bool {
+	t.Helper()
+
+	if got == nil {
+		t.Errorf("got nil, want not nil")
+		return false
+	}
+
+	return true
+}
+
+func Error(t interfaces.TB, err error) bool {
+	t.Helper()
+
+	if err == nil {
+		t.Errorf("got nil, want error")
+		return false
+	}
+
+	return true
+}
+
+func NoError(t interfaces.TB, err error) bool {
+	t.Helper()
+
+	if err != nil {
+		t.Errorf("got error %q, want nil", err.Error())
+		return false
+	}
+
+	return true
+}

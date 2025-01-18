@@ -2,6 +2,7 @@ package assert_test
 
 import (
 	"bytes"
+	"errors"
 	"fmt"
 	"testing"
 
@@ -29,6 +30,14 @@ func TestAsserts(t *testing.T) {
 		{"Regex passing", func() bool { return assert.Regex(ft, "111", `\d{3}`) }, true, ""},
 		{"Regex not passing", func() bool { return assert.Regex(ft, "aaa", `\d{3}`) }, false, `"aaa" didn't match regexp "\d{3}"`},
 		{"Regex not compiling", func() bool { return assert.Regex(ft, "aaa", `\p`) }, false, "regexp \"\\p\" didn't compile: error parsing regexp: invalid character class range: `\\p`"},
+		{"Nil passing", func() bool { return assert.Nil(ft, nil) }, true, ""},
+		{"Nil not passing", func() bool { return assert.Nil(ft, struct{}{}) }, false, "got {}, want nil"},
+		{"NotNil passing", func() bool { return assert.NotNil(ft, struct{}{}) }, true, ""},
+		{"NotNil not passing", func() bool { return assert.NotNil(ft, nil) }, false, "got nil, want not nil"},
+		{"Error passing", func() bool { return assert.Error(ft, errors.New("some error")) }, true, ""},
+		{"Error not passing", func() bool { return assert.Error(ft, nil) }, false, "got nil, want error"},
+		{"NoError passing", func() bool { return assert.NoError(ft, nil) }, true, ""},
+		{"NoError not passing", func() bool { return assert.NoError(ft, errors.New("some error")) }, false, `got error "some error", want nil`},
 	}
 
 	for _, test := range testCases {
