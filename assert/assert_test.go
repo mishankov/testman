@@ -8,184 +8,53 @@ import (
 	"github.com/mishankov/testman/assert"
 )
 
-func TestTrue(t *testing.T) {
+func TestAsserts(t *testing.T) {
 	buffer := &bytes.Buffer{}
-	ft := FakeTesting{Buffer: buffer}
+	ft := &FakeTesting{Buffer: buffer}
 
-	t.Run("passing", func(t *testing.T) {
-		defer ft.Buffer.Reset()
-		res := assert.True(ft, true)
+	testCases := []struct {
+		name       string
+		got        func() bool
+		wantResult bool
+		wantBuffer string
+	}{
+		{"True passing", func() bool { return assert.True(ft, true) }, true, ""},
+		{"True not passing", func() bool { return assert.True(ft, false) }, false, "condition expected to be true"},
+		{"Equal passing", func() bool { return assert.Equal(ft, 1, 1) }, true, ""},
+		{"Equal not passing", func() bool { return assert.Equal(ft, 1, 2) }, false, "got 1 want 2"},
+		{"DeepEqual passing", func() bool { return assert.DeepEqual(ft, []int{1, 2}, []int{1, 2}) }, true, ""},
+		{"DeepEqual not passing", func() bool { return assert.DeepEqual(ft, []int{1, 2}, []int{2, 2}) }, false, "got [1 2] want [2 2]"},
+		{"Contains passing", func() bool { return assert.Contains(ft, "some string", "me st") }, true, ""},
+		{"Contains not passing", func() bool { return assert.Contains(ft, "some string", "hello") }, false, `expected "some string" to contain "hello"`},
+		{"Regex passing", func() bool { return assert.Regex(ft, "111", `\d{3}`) }, true, ""},
+		{"Regex not passing", func() bool { return assert.Regex(ft, "aaa", `\d{3}`) }, false, `"aaa" didn't match regexp "\d{3}"`},
+		{"Regex not compiling", func() bool { return assert.Regex(ft, "aaa", `\p`) }, false, "regexp \"\\p\" didn't compile: error parsing regexp: invalid character class range: `\\p`"},
+	}
 
-		if !res {
-			t.Error("assert expected to pass")
-		}
+	for _, test := range testCases {
+		ft.Buffer.Reset()
+		t.Run(test.name, func(t *testing.T) {
+			if got := test.got(); got != test.wantResult {
+				t.Errorf("got %v, want %v", got, test.wantResult)
+			}
 
-		if !(ft.Buffer.Len() == 0) {
-			t.Error("buffer expected to be empty, got:", ft.Buffer.String())
-		}
-	})
-
-	t.Run("not passing", func(t *testing.T) {
-		defer ft.Buffer.Reset()
-		res := assert.True(ft, false)
-
-		if res {
-			t.Error("assert expected not to pass")
-		}
-
-		if ft.Buffer.String() != "condition expected to be true" {
-			t.Error("buffer expected to have error message, got:", ft.Buffer.String())
-		}
-	})
-}
-
-func TestEqual(t *testing.T) {
-	buffer := &bytes.Buffer{}
-	ft := FakeTesting{Buffer: buffer}
-
-	t.Run("passing", func(t *testing.T) {
-		defer ft.Buffer.Reset()
-		res := assert.Equal(ft, 1, 1)
-
-		if !res {
-			t.Error("assert expected to pass")
-		}
-
-		if !(ft.Buffer.Len() == 0) {
-			t.Error("buffer expected to be empty, got:", ft.Buffer.String())
-		}
-	})
-
-	t.Run("not passing", func(t *testing.T) {
-		defer ft.Buffer.Reset()
-		res := assert.Equal(ft, 1, 2)
-
-		if res {
-			t.Error("assert expected not to pass")
-		}
-
-		if ft.Buffer.String() != "got 1 want 2" {
-			t.Error("buffer expected to have error message, got:", ft.Buffer.String())
-		}
-	})
-}
-
-func TestDeepEqual(t *testing.T) {
-	buffer := &bytes.Buffer{}
-	ft := FakeTesting{Buffer: buffer}
-
-	t.Run("passing", func(t *testing.T) {
-		defer ft.Buffer.Reset()
-		res := assert.DeepEqual(ft, []int{1, 2}, []int{1, 2})
-
-		if !res {
-			t.Error("assert expected to pass")
-		}
-
-		if !(ft.Buffer.Len() == 0) {
-			t.Error("buffer expected to be empty, got:", ft.Buffer.String())
-		}
-	})
-
-	t.Run("not passing", func(t *testing.T) {
-		defer ft.Buffer.Reset()
-		res := assert.DeepEqual(ft, []int{1, 2}, []int{2, 2})
-
-		if res {
-			t.Error("assert expected not to pass")
-		}
-
-		if ft.Buffer.String() != "got [1 2] want [2 2]" {
-			t.Error("buffer expected to have error message, got:", ft.Buffer.String())
-		}
-	})
-}
-
-func TestContains(t *testing.T) {
-	buffer := &bytes.Buffer{}
-	ft := FakeTesting{Buffer: buffer}
-
-	t.Run("passing", func(t *testing.T) {
-		defer ft.Buffer.Reset()
-		res := assert.Contains(ft, "some string", "me st")
-
-		if !res {
-			t.Error("assert expected to pass")
-		}
-
-		if !(ft.Buffer.Len() == 0) {
-			t.Error("buffer expected to be empty, got:", ft.Buffer.String())
-		}
-	})
-
-	t.Run("not passing", func(t *testing.T) {
-		defer ft.Buffer.Reset()
-		res := assert.Contains(ft, "some string", "hello")
-
-		if res {
-			t.Error("assert expected not to pass")
-		}
-
-		if ft.Buffer.String() != `expected "some string" to contain "hello"` {
-			t.Error("buffer expected to have error message, got:", ft.Buffer.String())
-		}
-	})
-}
-
-func TestRegex(t *testing.T) {
-	buffer := &bytes.Buffer{}
-	ft := FakeTesting{Buffer: buffer}
-
-	t.Run("passing", func(t *testing.T) {
-		defer ft.Buffer.Reset()
-		res := assert.Regex(ft, "111", `\d{3}`)
-
-		if !res {
-			t.Error("assert expected to pass")
-		}
-
-		if !(ft.Buffer.Len() == 0) {
-			t.Error("buffer expected to be empty, got:", ft.Buffer.String())
-		}
-	})
-
-	t.Run("not passing", func(t *testing.T) {
-		defer ft.Buffer.Reset()
-		res := assert.Regex(ft, "aaa", `\d{3}`)
-
-		if res {
-			t.Error("assert expected not to pass")
-		}
-
-		if ft.Buffer.String() != `"aaa" didn't match regexp "\d{3}"` {
-			t.Error("buffer expected to have error message, got:", ft.Buffer.String())
-		}
-	})
-
-	t.Run("breaking", func(t *testing.T) {
-		defer ft.Buffer.Reset()
-		res := assert.Regex(ft, "aaa", `\p`)
-
-		if res {
-			t.Error("assert expected not to pass")
-		}
-
-		if ft.Buffer.String() != "regexp \"\\p\" didn't compile: error parsing regexp: invalid character class range: `\\p`" {
-			t.Error("buffer expected to have error message, got:", ft.Buffer.String())
-		}
-	})
+			if ft.Buffer.String() != test.wantBuffer {
+				t.Errorf("got %q, want %q", ft.Buffer.String(), test.wantBuffer)
+			}
+		})
+	}
 }
 
 type FakeTesting struct {
 	Buffer *bytes.Buffer
 }
 
-func (ft FakeTesting) Error(args ...interface{}) {
+func (ft *FakeTesting) Error(args ...interface{}) {
 	ft.Buffer.WriteString(fmt.Sprint(args...))
 }
 
-func (ft FakeTesting) Errorf(format string, args ...interface{}) {
+func (ft *FakeTesting) Errorf(format string, args ...interface{}) {
 	ft.Buffer.WriteString(fmt.Sprintf(format, args...))
 }
 
-func (ft FakeTesting) Helper() {}
+func (ft *FakeTesting) Helper() {}
