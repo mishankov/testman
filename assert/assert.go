@@ -112,3 +112,25 @@ func NoError(t interfaces.TB, err error) bool {
 
 	return true
 }
+
+func EmptySlice[T any](t interfaces.TB, got []T) bool {
+	t.Helper()
+
+	if len(got) != 0 {
+		t.Errorf("slice is not empty: %v", got)
+		return false
+	}
+
+	return true
+}
+
+func NotEmptySlice[T any](t interfaces.TB, got []T) bool {
+	t.Helper()
+
+	if len(got) == 0 {
+		t.Error("slice is empty")
+		return false
+	}
+
+	return true
+}

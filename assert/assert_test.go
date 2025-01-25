@@ -38,6 +38,10 @@ func TestAsserts(t *testing.T) {
 		{"Error not passing", func() bool { return assert.Error(ft, nil) }, false, "got nil, want error"},
 		{"NoError passing", func() bool { return assert.NoError(ft, nil) }, true, ""},
 		{"NoError not passing", func() bool { return assert.NoError(ft, errors.New("some error")) }, false, `got error "some error", want nil`},
+		{"EmptySlice passing", func() bool { return assert.EmptySlice[int](ft, []int{}) }, true, ""},
+		{"EmptySlice not passing", func() bool { return assert.EmptySlice[int](ft, []int{1, 2}) }, false, "slice is not empty: [1 2]"},
+		{"NotEmptySlice passing", func() bool { return assert.NotEmptySlice[int](ft, []int{1, 2}) }, true, ""},
+		{"NotEmptySlice not passing", func() bool { return assert.NotEmptySlice[int](ft, []int{}) }, false, "slice is empty"},
 	}
 
 	for _, test := range testCases {
