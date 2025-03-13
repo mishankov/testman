@@ -19,6 +19,17 @@ func True(t interfaces.TB, condition bool) bool {
 	return true
 }
 
+func False(t interfaces.TB, condition bool) bool {
+	t.Helper()
+
+	if condition {
+		t.Error("condition expected to be false")
+		return false
+	}
+
+	return true
+}
+
 func Equal[T comparable](t interfaces.TB, got, want T) bool {
 	t.Helper()
 

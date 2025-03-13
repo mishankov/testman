@@ -21,6 +21,8 @@ func TestAsserts(t *testing.T) {
 	}{
 		{"True passing", func() bool { return assert.True(ft, true) }, true, ""},
 		{"True not passing", func() bool { return assert.True(ft, false) }, false, "condition expected to be true"},
+		{"False passing", func() bool { return assert.False(ft, false) }, true, ""},
+		{"False not passing", func() bool { return assert.False(ft, true) }, false, "condition expected to be false"},
 		{"Equal passing", func() bool { return assert.Equal(ft, 1, 1) }, true, ""},
 		{"Equal not passing", func() bool { return assert.Equal(ft, 1, 2) }, false, "got 1 want 2"},
 		{"DeepEqual passing", func() bool { return assert.DeepEqual(ft, []int{1, 2}, []int{1, 2}) }, true, ""},
